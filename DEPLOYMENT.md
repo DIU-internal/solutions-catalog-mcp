@@ -1,5 +1,8 @@
 # Hosting the DIU Solutions Catalog MCP
 
+For an NVIDIA DGX-1 running Ubuntu 20.04 and host nginx, use the dedicated
+[DGX deployment guide](deploy/dgx/README.md).
+
 The hosted server exposes MCP Streamable HTTP at `/mcp`, a liveness check at `/health`,
 and a data/model readiness check at `/ready`. It is stateless at the MCP transport layer and
 uses one process per container because embedded Qdrant takes an exclusive lock on its local files.
@@ -14,17 +17,17 @@ uv run diu-catalog-web
 Then verify:
 
 ```bash
-curl http://localhost:8000/health
-curl http://localhost:8000/ready
+curl http://localhost:8001/health
+curl http://localhost:8001/ready
 ```
 
-The MCP URL is `http://localhost:8000/mcp`. Test it with MCP Inspector:
+The MCP URL is `http://localhost:8001/mcp`. Test it with MCP Inspector:
 
 ```bash
 npx @modelcontextprotocol/inspector@latest
 ```
 
-Select **Streamable HTTP** and enter `http://localhost:8000/mcp`.
+Select **Streamable HTTP** and enter `http://localhost:8001/mcp`.
 
 ## Run with Docker
 
@@ -34,7 +37,7 @@ it starts.
 
 ```bash
 docker build -t diu-catalog-mcp .
-docker run --rm -p 8000:8000 diu-catalog-mcp
+docker run --rm -p 8001:8001 diu-catalog-mcp
 ```
 
 Or:
@@ -50,7 +53,7 @@ Fly.io, Railway, Render, Azure Container Apps, AWS App Runner, or a Kubernetes d
 
 Configure the platform as follows:
 
-- Container port: `8000` (the server also honors the platform-provided `PORT` variable).
+- Container port: `8001` (the server also honors the platform-provided `PORT` variable).
 - Health check: `/health`.
 - Readiness check, when supported: `/ready`.
 - Process count per container: `1`; do not configure multiple Uvicorn workers.

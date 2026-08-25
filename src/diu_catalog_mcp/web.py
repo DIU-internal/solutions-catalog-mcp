@@ -95,7 +95,7 @@ app = create_app()
 
 def main() -> None:
     host = os.getenv("HOST", "0.0.0.0")
-    port = int(os.getenv("PORT", "8000"))
+    port = int(os.getenv("PORT", "8001"))
     uvicorn.run(app, host=host, port=port, workers=1, proxy_headers=True)
 
 

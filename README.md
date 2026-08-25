@@ -28,9 +28,12 @@ To run the remote HTTP server instead:
 uv run diu-catalog-web
 ```
 
-This exposes the MCP server at `http://localhost:8000/mcp`. See
+This exposes the MCP server at `http://localhost:8001/mcp`. See
 [DEPLOYMENT.md](DEPLOYMENT.md) for Docker, cloud hosting, ChatGPT connection, health checks,
 and optional bearer-token protection.
+
+For an NVIDIA DGX-1 running Ubuntu 20.04 with host nginx, see
+[deploy/dgx/README.md](deploy/dgx/README.md).
 
 The default MCP transport is stdio. Add it to an MCP client with:
 
