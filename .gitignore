@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Generated DIU catalog search artifacts
+data/qdrant/
+data/models/
+:memory:.ses
