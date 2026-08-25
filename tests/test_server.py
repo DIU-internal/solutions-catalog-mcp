@@ -45,6 +45,8 @@ async def test_mcp_discovery_tools(monkeypatch) -> None:
             "list_solutions",
             "catalog_facets",
             "catalog_status",
+            "search",
+            "fetch",
         }
 
         search = await client.call_tool(
@@ -65,3 +67,20 @@ async def test_mcp_discovery_tools(monkeypatch) -> None:
             {"value": "Autonomous Warfare Portfolio", "count": 1}
         ]
 
+        compatible_search = await client.call_tool("search", {"query": "harbor security"})
+        assert compatible_search.structured_content["results"][0] == {
+            "id": "solution-1",
+            "title": "Autonomous Harbor Watch — Example Robotics",
+            "url": "https://example.test/solution-1",
+        }
+
+        compatible_fetch = await client.call_tool("fetch", {"id": "solution-1"})
+        assert compatible_fetch.structured_content["id"] == "solution-1"
+        assert (
+            "Problem: Persistent harbor monitoring"
+            in compatible_fetch.structured_content["text"]
+        )
+
+        for tool in tools:
+            assert tool.annotations.readOnlyHint is True
+            assert tool.annotations.destructiveHint is False

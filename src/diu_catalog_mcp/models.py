@@ -3,6 +3,26 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, fields
 from typing import Any
 
+from pydantic import BaseModel, Field
+
+
+class SearchResult(BaseModel):
+    id: str = Field(description="Stable DIU catalog UUID")
+    title: str = Field(description="Human-readable project and vendor name")
+    url: str = Field(description="Canonical public DIU project URL")
+
+
+class SearchOutput(BaseModel):
+    results: list[SearchResult]
+
+
+class FetchOutput(BaseModel):
+    id: str
+    title: str
+    text: str
+    url: str
+    metadata: dict[str, str]
+
 
 @dataclass(slots=True)
 class CatalogRecord:

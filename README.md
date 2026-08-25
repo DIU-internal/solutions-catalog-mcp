@@ -9,6 +9,7 @@ The project provides a reproducible pipeline that:
 2. Writes the complete data set to one CSV, including plain text and original HTML fields.
 3. Embeds the records with FastEmbed and persists them in an embedded Qdrant database.
 4. Exposes semantic search, exact lookup, browsing, facets, and status through FastMCP.
+5. Runs locally over stdio or as a hosted MCP Streamable HTTP service.
 
 ## Quick start
 
@@ -20,6 +21,16 @@ uv run diu-catalog-scrape
 uv run diu-catalog-ingest
 uv run diu-catalog-mcp
 ```
+
+To run the remote HTTP server instead:
+
+```bash
+uv run diu-catalog-web
+```
+
+This exposes the MCP server at `http://localhost:8000/mcp`. See
+[DEPLOYMENT.md](DEPLOYMENT.md) for Docker, cloud hosting, ChatGPT connection, health checks,
+and optional bearer-token protection.
 
 The default MCP transport is stdio. Add it to an MCP client with:
 
@@ -70,6 +81,8 @@ have been validated.
 - `list_solutions`: browse and filter the catalog with pagination.
 - `catalog_facets`: list focus areas, vendors, and years with counts.
 - `catalog_status`: report data paths and CSV/vector record counts.
+- `search`: ChatGPT company-knowledge/deep-research compatible semantic search.
+- `fetch`: ChatGPT-compatible full record retrieval by search-result ID.
 
 Example discovery requests:
 

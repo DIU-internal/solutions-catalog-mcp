@@ -8,7 +8,7 @@ from typing import Any
 from fastmcp import FastMCP
 
 from .config import Settings
-from .models import CatalogRecord
+from .models import CatalogRecord, FetchOutput, SearchOutput, SearchResult
 from .vector_store import CatalogVectorStore, read_catalog
 
 mcp = FastMCP(
@@ -47,7 +47,15 @@ def _records() -> tuple[CatalogRecord, ...]:
     return tuple(read_catalog(_settings().csv_path))
 
 
-@mcp.tool
+READ_ONLY_ANNOTATIONS = {
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+}
+
+
+@mcp.tool(annotations=READ_ONLY_ANNOTATIONS)
 def search_solutions(
     query: str,
     limit: int = 10,
@@ -69,7 +77,7 @@ def search_solutions(
     )
 
 
-@mcp.tool
+@mcp.tool(annotations=READ_ONLY_ANNOTATIONS)
 def get_solution(uuid: str) -> dict[str, str]:
     """Get one complete catalog solution by its DIU UUID."""
     for record in _records():
@@ -78,7 +86,7 @@ def get_solution(uuid: str) -> dict[str, str]:
     raise ValueError(f"No DIU catalog solution found for UUID: {uuid}")
 
 
-@mcp.tool
+@mcp.tool(annotations=READ_ONLY_ANNOTATIONS)
 def list_solutions(
     portfolio: str | None = None,
     vendor: str | None = None,
@@ -105,7 +113,7 @@ def list_solutions(
     }
 
 
-@mcp.tool
+@mcp.tool(annotations=READ_ONLY_ANNOTATIONS)
 def catalog_facets() -> dict[str, list[dict[str, Any]]]:
     """List available focus areas, vendors, and completion years with record counts."""
 
@@ -125,7 +133,7 @@ def catalog_facets() -> dict[str, list[dict[str, Any]]]:
     }
 
 
-@mcp.tool
+@mcp.tool(annotations=READ_ONLY_ANNOTATIONS)
 def catalog_status() -> dict[str, Any]:
     """Report the configured data paths and indexed record counts."""
     settings = _settings()
@@ -140,6 +148,47 @@ def catalog_status() -> dict[str, Any]:
         "csv_records": csv_count,
         "indexed_records": _store().count(),
     }
+
+
+@mcp.tool(annotations=READ_ONLY_ANNOTATIONS)
+def search(query: str) -> SearchOutput:
+    """Search the DIU catalog for ChatGPT company knowledge and deep research.
+
+    Returns stable IDs, descriptive titles, and canonical public URLs. Use fetch
+    with a result ID to retrieve the complete project content for citation.
+    """
+    matches = _store().search(query, limit=10)
+    return SearchOutput(
+        results=[
+            SearchResult(
+                id=match["uuid"],
+                title=f"{match['project_name']} — {match['vendor_name']}",
+                url=match["source_url"],
+            )
+            for match in matches
+        ]
+    )
+
+
+@mcp.tool(annotations=READ_ONLY_ANNOTATIONS)
+def fetch(id: str) -> FetchOutput:
+    """Fetch one complete DIU catalog record returned by the search tool."""
+    for record in _records():
+        if record.uuid == id:
+            return FetchOutput(
+                id=record.uuid,
+                title=f"{record.project_name} — {record.vendor_name}",
+                text=record.search_document(),
+                url=record.source_url,
+                metadata={
+                    "vendor": record.vendor_name,
+                    "portfolio": record.portfolio,
+                    "year_completed": record.year_completed,
+                    "dod_partners": record.dod_partners,
+                    "key_terms": record.key_terms,
+                },
+            )
+    raise ValueError(f"No DIU catalog solution found for ID: {id}")
 
 
 def main() -> None:
