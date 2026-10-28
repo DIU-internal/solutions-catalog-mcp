@@ -1,7 +1,29 @@
 # DIU Solutions Catalog MCP
 
-A Python [FastMCP](https://gofastmcp.com/) server for searching and discovering projects
-in the [DIU Commercial Solutions Catalog](https://www.diu.mil/solutions/portfolio/catalog).
+An MCP server that makes successful DIU prototypes easier to find in the
+[DIU Commercial Solutions Catalog](https://www.diu.mil/solutions/portfolio/catalog).
+It turns the public catalog into a searchable, citation-ready resource for discovering
+capabilities by mission need, vendor, focus area, or completion year.
+
+## Architecture and deployment
+
+The Python [FastMCP](https://gofastmcp.com/) application exposes seven read-only catalog
+tools. It searches a local CSV snapshot through an embedded Qdrant vector index, with a
+local FastEmbed model cache. Qdrant is embedded in the server process; it is not a separate
+database service.
+
+Use the deployment path that fits the client:
+
+- **Local MCP client:** run the server over stdio.
+- **Local or hosted HTTP:** run Streamable HTTP at `/mcp` on port `8001`.
+- **Container host or DGX:** build the Docker image; optionally place nginx in front for a
+  trusted-network or public HTTPS endpoint.
+
+The Docker image includes the catalog CSV, Qdrant index, and embedding model, so normal
+container starts do not download or build those assets. See [DEPLOYMENT.md](DEPLOYMENT.md)
+for commands and hosting guidance.
+
+## Data pipeline
 
 The project provides a reproducible pipeline that:
 
@@ -32,9 +54,6 @@ This exposes the MCP server at `http://localhost:8001/mcp`. See
 [DEPLOYMENT.md](DEPLOYMENT.md) for Docker, cloud hosting, ChatGPT connection, health checks,
 and optional bearer-token protection.
 
-For an NVIDIA DGX-1 running Ubuntu 20.04 with host nginx, see
-[deploy/dgx/README.md](deploy/dgx/README.md).
-
 The default MCP transport is stdio. Add it to an MCP client with:
 
 ```json
@@ -47,8 +66,6 @@ The default MCP transport is stdio. Add it to an MCP client with:
   }
 }
 ```
-
-## Data pipeline
 
 Scrape the full catalog:
 

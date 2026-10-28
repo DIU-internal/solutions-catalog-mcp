@@ -1,7 +1,8 @@
 # Hosting the DIU Solutions Catalog MCP
 
-For an NVIDIA DGX-1 running Ubuntu 20.04 and host nginx, use the dedicated
-[DGX deployment guide](deploy/dgx/README.md).
+For an NVIDIA DGX-1 with host nginx, use [deploy/dgx/compose.yaml](deploy/dgx/compose.yaml)
+with [nginx-ip-port.conf](deploy/dgx/nginx-ip-port.conf) for a trusted network or
+[nginx-https.conf.example](deploy/dgx/nginx-https.conf.example) for public HTTPS.
 
 The hosted server exposes MCP Streamable HTTP at `/mcp`, a liveness check at `/health`,
 and a data/model readiness check at `/ready`. It is stateless at the MCP transport layer and
