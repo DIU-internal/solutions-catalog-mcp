@@ -9,7 +9,7 @@ add CUDA and NVIDIA Container Toolkit dependencies without a useful latency bene
 ```text
 Codex / MCP client
         |
-        | HTTP :8080 (trusted network) or HTTPS :443
+        | HTTP :8099 (trusted network) or HTTPS :443
         v
 host nginx
         |
@@ -73,7 +73,7 @@ Expected readiness includes `"indexed_records":137`.
 
 ## 3. Configure host nginx for IP:port access
 
-This option exposes `http://DGX_IP:8080/mcp`, suitable for a trusted LAN or VPN.
+This option exposes `http://DGX_IP:8099/mcp`, suitable for a trusted LAN or VPN.
 Because bearer tokens are not encrypted by plain HTTP, do not route this endpoint across an
 untrusted network; use the HTTPS configuration below instead.
 
@@ -88,12 +88,12 @@ sudo systemctl reload nginx
 
 If the symlink already exists, do not recreate it; update the file and reload nginx.
 
-Restrict port 8080 to the client IP or trusted network. Examples:
+Restrict port 8099 to the client IP or trusted network. Examples:
 
 ```bash
-sudo ufw allow from CLIENT_IP to any port 8080 proto tcp
+sudo ufw allow from CLIENT_IP to any port 8099 proto tcp
 # or for a private LAN/VPN range:
-sudo ufw allow from 10.0.0.0/8 to any port 8080 proto tcp
+sudo ufw allow from 10.0.0.0/8 to any port 8099 proto tcp
 sudo ufw status
 ```
 
@@ -103,8 +103,8 @@ DGX's existing firewall policy.
 Verify through nginx:
 
 ```bash
-curl http://DGX_IP:8080/health
-curl http://DGX_IP:8080/ready
+curl http://DGX_IP:8099/health
+curl http://DGX_IP:8099/ready
 ```
 
 ## 4. Connect Codex
@@ -119,7 +119,7 @@ Add this to `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.diu_catalog]
-url = "http://DGX_IP:8080/mcp"
+url = "http://DGX_IP:8099/mcp"
 bearer_token_env_var = "DIU_CATALOG_MCP_TOKEN"
 required = true
 startup_timeout_sec = 30
@@ -134,7 +134,7 @@ configuration documentation: <https://developers.openai.com/codex/mcp/>.
 Use this MCP endpoint:
 
 ```text
-http://DGX_IP:8080/mcp
+http://DGX_IP:8099/mcp
 ```
 
 Send the token as:
@@ -147,7 +147,7 @@ If the client uses a JSON connection definition, the equivalent shape is general
 
 ```json
 {
-  "url": "http://DGX_IP:8080/mcp",
+  "url": "http://DGX_IP:8099/mcp",
   "headers": {
     "Authorization": "Bearer YOUR_DGX_SECRET"
   }
@@ -200,7 +200,7 @@ docker compose down
 - **502 from nginx:** Run `docker compose ps`, check container logs, and verify
   `curl http://127.0.0.1:8001/ready` on the DGX.
 - **401 from `/mcp`:** Confirm the client sends the same bearer token as `DIU_MCP_API_KEY` in `.env`.
-- **Connection timeout:** Check nginx is listening with `sudo ss -ltnp | grep -E ':8001|:8080'`, then
+- **Connection timeout:** Check nginx is listening with `sudo ss -ltnp | grep -E ':8001|:8099'`, then
   verify the host firewall and upstream network ACLs.
 - **Container marked unhealthy:** Read container logs. Readiness requires the embedded Qdrant index
   and model cache to load successfully.
